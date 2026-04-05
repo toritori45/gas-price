@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ガソリン価格クラウド | みんなで作る価格情報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy: #0d1b3e;
+  --navy2: #162447;
+  --navy3: #1e2d4f;
+  --blue1: #0d3b8e;
+  --blue2: #1565c0;
+  --accent: #f9c741;
+  --red: #e53935;
+  --green: #1b5e20;
+  --green-light: #69f0ae;
+  --text: #e0ecff;
+  --text2: #7aa7e8;
+  --text3: #4a6fa5;
+  --border: #1e3a6e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+#topbar {
+  background: var(--blue1);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 50px;
+  gap: 0;
+  border-bottom: 2px solid var(--accent);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: #fff;
+  margin-right: 32px;
+  white-space: nowrap;
+}
+.logo em { color: var(--accent); font-style: normal; }
+.logo small { font-family: 'Noto Sans JP', sans-serif; font-size: 11px; color: var(--text2); font-weight: 400; letter-spacing: 0; margin-left: 6px; }
+.ntab {
+  padding: 0 18px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s;
+  user-select: none;
+}
+.ntab:hover { color: #fff; }
+.ntab.on { color: #fff; border-bottom-color: var(--accent); font-weight: 500; }
+
+/* SUBBAR */
+#subbar {
+  background: var(--blue2);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 50px;
+  z-index: 99;
+  border-bottom: 1px solid var(--border);
+}
+.fb {
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  opacity: 0.4;
+  transition: opacity 0.15s, outline 0.15s;
+}
+.fb.on { opacity: 1; outline: 2px solid rgba(255,255,255,0.75); outline-offset: 2px; }
+.fb-r { background: #e53935; color: #fff; }
+.fb-h { background: #8e24aa; color: #fff; }
+.fb-d { background: #00897b; color: #fff; }
+.fb-k { background: #f57c00; color: #fff; }
+.ssearch {
+  flex: 1;
+  max-width: 320px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  background: #fff;
+  color: #111;
+}
+.ssearch:focus { outline: 2px solid var(--accent); }
+.ssort {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: none;
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  background: #0d47a1;
+  color: #fff;
+  cursor: pointer;
+}
+.post-top-btn {
+  margin-left: auto;
+  padding: 6px 18px;
+  background: var(--red);
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: background 0.15s;
+}
+.post-top-btn:hover { background: #c62828; }
+
+/* LAYOUT */
+#layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: calc(100vh - 50px - 44px);
+}
+@media (max-width: 768px) {
+  #layout { grid-template-columns: 1fr; }
+  #side { display: none; }
+}
+
+/* SIDEBAR */
+#side {
+  background: var(--navy2);
+  padding: 16px;
+  border-right: 1px solid var(--border);
+}
+.stitle {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1.2px;
+  margin-bottom: 8px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+.sbox {
+  background: var(--blue1);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sbox.green { background: var(--green); }
+.sbl { font-size: 11px; color: var(--text2); }
+.sbox.green .sbl { color: #a5d6a7; }
+.sbv { font-size: 20px; font-weight: 700; color: #fff; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+.sbox.green .sbv { color: var(--green-light); }
+.sbu { font-size: 10px; color: var(--text3); }
+.alist { margin-bottom: 16px; max-height: 240px; overflow-y: auto; }
+.alist::-webkit-scrollbar { width: 4px; }
+.alist::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.aitem {
+  padding: 7px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+  transition: background 0.1s;
+}
+.aitem:hover { background: var(--border); }
+.aitem.on { background: var(--blue1); }
+.aname { font-size: 13px; color: var(--text2); }
+.acnt { font-size: 10px; color: var(--text3); }
+.amin { font-size: 14px; font-weight: 700; color: var(--accent); font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+.pbtn {
+  width: 100%;
+  padding: 10px;
+  background: var(--red);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+.pbtn:hover { background: #c62828; }
+
+/* CONTENT */
+#cnt {
+  background: var(--navy3);
+  padding: 20px 24px;
+}
+.cbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.clabel { font-size: 13px; color: var(--text2); }
+.cnote { font-size: 11px; color: var(--text3); }
+
+/* POST FORM */
+#pform {
+  display: none;
+  background: var(--navy2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+#pform.on { display: block; }
+.pfg {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+@media (max-width: 600px) { .pfg { grid-template-columns: 1fr 1fr; } }
+.pfl { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.pfi {
+  background: #0d2a6e;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 7px 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.pfi:focus { outline: none; border-color: var(--accent); }
+.pfi::placeholder { color: #3a5a8e; }
+.full { grid-column: 1 / -1; }
+.psub {
+  padding: 9px 28px;
+  background: var(--red);
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: background 0.15s;
+}
+.psub:hover { background: #c62828; }
+.pcan {
+  padding: 9px 20px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-left: 8px;
+}
+.pcan:hover { background: var(--border); }
+
+/* TOAST */
+.toast {
+  display: none;
+  border-radius: 5px;
+  padding: 10px 16px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.toast.ok { display: block; background: #1b5e20; color: #c8e6c9; border: 1px solid #2e7d32; }
+.toast.ng { display: block; background: #b71c1c; color: #ffcdd2; border: 1px solid #c62828; }
+
+/* TABLE */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+th {
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 500;
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+th.r { text-align: right; }
+.tr { border-bottom: 1px solid #1a2a4a; transition: background 0.1s; cursor: default; }
+.tr:hover { background: var(--navy2); }
+td { padding: 10px 10px; vertical-align: middle; }
+.rn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--blue1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--text2);
+}
+.rn.r1 { background: #b71c1c; color: #ffcdd2; }
+.rn.r2 { background: #b85c00; color: #ffe0b2; }
+.sn { font-size: 14px; font-weight: 500; color: #e8f0fe; }
+.sa { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.sm { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.bs { background: #0d47a1; color: #bbdefb; }
+.bf { background: #1b5e20; color: #c8e6c9; }
+.pc { text-align: right; }
+.pn { font-size: 24px; font-weight: 700; color: #fff; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+.pu { font-size: 10px; color: var(--text3); }
+.pd-c { font-size: 11px; color: var(--green-light); font-weight: 500; }
+.pd-e { font-size: 11px; color: #ff5252; }
+.tc { font-size: 11px; color: var(--text3); text-align: right; white-space: nowrap; }
+.lc { text-align: right; }
+.lb {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 11px; border-radius: 20px;
+  border: 1px solid var(--border); background: none;
+  font-size: 12px; color: var(--text3); cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+}
+.lb:hover { border-color: var(--text2); color: var(--text2); }
+.lb.on { background: #1b3a1b; color: var(--green-light); border-color: #2e7d32; }
+.emsg { text-align: center; padding: 4rem; color: var(--text3); font-size: 14px; }
+
+/* LOADING */
+#loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--text3);
+  font-size: 14px;
+  gap: 10px;
+}
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* FIREBASE SETUP NOTICE */
+#setup-notice {
+  background: #0d2a6e;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 24px;
+  display: none;
+}
+#setup-notice h2 { color: var(--accent); font-size: 16px; margin-bottom: 12px; }
+#setup-notice p { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 8px; }
+#setup-notice code {
+  background: #0a1f50;
+  color: #93c5fd;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: monospace;
+}
+#setup-notice pre {
+  background: #0a1f50;
+  color: #93c5fd;
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: monospace;
+  overflow-x: auto;
+  margin: 8px 0;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- Firebase設定前の案内 -->
+<div id="setup-notice">
+  <h2>⚙️ Firebase設定が必要です</h2>
+  <p>下記の手順でFirebaseを設定してください。設定後にこのメッセージは消えます。</p>
+  <p><strong>① </strong><a href="https://console.firebase.google.com/" target="_blank" style="color:var(--accent);">console.firebase.google.com</a> でプロジェクトを新規作成</p>
+  <p><strong>② </strong>「Firestore Database」を有効化 → ルールを以下に設定：</p>
+  <pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /prices/{doc} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['likes']);
+      allow delete: if false;
+    }
+  }
+}</pre>
+  <p><strong>③ </strong>プロジェクト設定 →「ウェブアプリを追加」→ 設定値をこのHTMLの下記の箇所に貼り付け：</p>
+  <pre>const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",       // ← ここを置き換え
+  authDomain: "...",
+  projectId: "...",
+  ...
+};</pre>
+</div>
+
+<div id="topbar">
+  <div class="logo"><em>gogo</em>.gs<small>クラウド価格</small></div>
+  <div class="ntab on" onclick="setNav(this,'list')">価格一覧</div>
+  <div class="ntab" onclick="setNav(this,'post')">価格を投稿</div>
+  <button class="post-top-btn" onclick="showPost()">＋ 投稿する</button>
+</div>
+
+<div id="subbar">
+  <button class="fb fb-r on" onclick="setFuel(this,'レギュラー')">レギュラー</button>
+  <button class="fb fb-h" onclick="setFuel(this,'ハイオク')">ハイオク</button>
+  <button class="fb fb-d" onclick="setFuel(this,'軽油')">軽油</button>
+  <button class="fb fb-k" onclick="setFuel(this,'灯油')">灯油</button>
+  <input class="ssearch" type="text" id="si" placeholder="スタンド名・エリアで絞り込み..." oninput="render()"/>
+  <select class="ssort" id="ss" onchange="render()">
+    <option value="price">安い順</option>
+    <option value="recent">新着順</option>
+    <option value="likes">いいね順</option>
+  </select>
+</div>
+
+<div id="layout">
+  <div id="side">
+    <div class="stitle">価格サマリー</div>
+    <div class="sbox green">
+      <div>
+        <div class="sbl">最安値</div>
+        <div><span class="sbv" id="s1">—</span><span class="sbu"> 円/L</span></div>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#69f0ae" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+    <div class="sbox"><div><div class="sbl">平均価格</div><div><span class="sbv" id="s2">—</span><span class="sbu"> 円/L</span></div></div></div>
+    <div class="sbox"><div><div class="sbl">最高値</div><div><span class="sbv" id="s3">—</span><span class="sbu"> 円/L</span></div></div></div>
+    <div class="sbox"><div><div class="sbl">投稿件数</div><div><span class="sbv" id="s4">0</span><span class="sbu"> 件</span></div></div></div>
+
+    <div class="stitle" style="margin-top:16px;">エリアで絞り込み</div>
+    <div class="alist" id="al"></div>
+    <button class="pbtn" onclick="showPost()">＋ 価格を投稿する</button>
+  </div>
+
+  <div id="cnt">
+    <div id="toast" class="toast"></div>
+
+    <div id="pform">
+      <div class="pfg">
+        <div class="full">
+          <div class="pfl">スタンド名</div>
+          <input class="pfi" id="fn" type="text" placeholder="例：ENEOS 呉中央店"/>
+        </div>
+        <div>
+          <div class="pfl">エリア</div>
+          <input class="pfi" id="fa" type="text" placeholder="例：呉市"/>
+        </div>
+        <div>
+          <div class="pfl">燃料種別</div>
+          <select class="pfi" id="ff">
+            <option>レギュラー</option>
+            <option>ハイオク</option>
+            <option>軽油</option>
+            <option>灯油</option>
+          </select>
+        </div>
+        <div>
+          <div class="pfl">価格（円/L）</div>
+          <input class="pfi" id="fp" type="number" placeholder="例：168" min="50" max="350"/>
+        </div>
+        <div>
+          <div class="pfl">サービス</div>
+          <select class="pfi" id="fv">
+            <option>セルフ</option>
+            <option>フルサービス</option>
+          </select>
+        </div>
+        <div class="full">
+          <div class="pfl">メモ（任意）</div>
+          <input class="pfi" id="fm" type="text" placeholder="例：カード割あり・24時間営業"/>
+        </div>
+      </div>
+      <button class="psub" onclick="doPost()">投稿する（みんなと共有）</button>
+      <button class="pcan" onclick="hidePost()">キャンセル</button>
+    </div>
+
+    <div class="cbar">
+      <span class="clabel" id="cl">読み込み中...</span>
+      <span class="cnote">ユーザー投稿データ・30日で自動削除</span>
+    </div>
+
+    <div id="loading"><div class="spinner"></div>データを読み込み中...</div>
+
+    <div class="tbl-wrap" id="tblwrap" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34px;"></th>
+            <th>スタンド名</th>
+            <th>サービス</th>
+            <th class="r">価格</th>
+            <th class="r">投稿日時</th>
+            <th class="r">評価</th>
+          </tr>
+        </thead>
+        <tbody id="tb"></tbody>
+      </table>
+      <div id="em" class="emsg" style="display:none;">まだ投稿がありません。最初に投稿してみましょう！</div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getFirestore, collection, query, where, orderBy,
+  onSnapshot, addDoc, updateDoc, doc, serverTimestamp, Timestamp
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ============================================================
+//  🔧 ここにFirebaseの設定値を貼り付けてください
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyC7MkD3dNDySDABwMjoQVqEw7aPeMLxz-c",
+  authDomain: "gas-price-961b7.firebaseapp.com",
+  projectId: "gas-price-961b7",
+  storageBucket: "gas-price-961b7.firebasestorage.app",
+  messagingSenderId: "513182235602",
+  appId: "1:513182235602:web:0dd90956d92542a817660b",
+  measurementId: "G-2HVNQ2GZ78"
+};
+// ============================================================
+
+const isConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+if (!isConfigured) {
+  document.getElementById('setup-notice').style.display = 'block';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('tblwrap').style.display = 'block';
+  document.getElementById('cl').textContent = 'Firebase未設定';
+  window._dbReady = false;
+} else {
+  window._dbReady = true;
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window._db = db;
+  window._col = collection(db, 'prices');
+  window._updateDoc = updateDoc;
+  window._doc = doc;
+  window._addDoc = addDoc;
+  window._serverTimestamp = serverTimestamp;
+  window._Timestamp = Timestamp;
+  window._query = query;
+  window._where = where;
+  window._orderBy = orderBy;
+  window._onSnapshot = onSnapshot;
+  setupListener();
+}
+
+function setupListener() {
+  const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const q = window._query(
+    window._col,
+    window._where('createdAt', '>', window._Timestamp.fromDate(THIRTY_DAYS_AGO)),
+    window._orderBy('createdAt', 'desc')
+  );
+  window._onSnapshot(q, (snap) => {
+    window._allData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('tblwrap').style.display = 'block';
+    render();
+    rarea();
+  }, (err) => {
+    console.error(err);
+    document.getElementById('loading').innerHTML = '<span style="color:#ff5252;">読み込みエラー。Firebaseの設定を確認してください。</span>';
+  });
+}
+</script>
+
+<script>
+let fuel = 'レギュラー';
+let filterArea = '';
+window._allData = [];
+
+function tl(ts) {
+  if (!ts) return '—';
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  const m = Math.floor((Date.now() - date.getTime()) / 60000);
+  if (m < 1) return 'たった今';
+  if (m < 60) return m + '分前';
+  if (m < 1440) return Math.floor(m / 60) + '時間前';
+  return Math.floor(m / 1440) + '日前';
+}
+
+function filt() {
+  const q = (document.getElementById('si') || { value: '' }).value.toLowerCase();
+  return (window._allData || []).filter(d =>
+    d.fuel === fuel &&
+    (!filterArea || d.area === filterArea) &&
+    (d.name?.toLowerCase().includes(q) || d.area?.toLowerCase().includes(q))
+  );
+}
+
+function setFuel(btn, f) {
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  fuel = f;
+  filterArea = '';
+  render();
+  rarea();
+}
+
+function render() {
+  const sort = document.getElementById('ss').value;
+  let list = filt();
+  if (sort === 'price') list.sort((a, b) => a.price - b.price);
+  else if (sort === 'recent') list.sort((a, b) => {
+    const ta = a.createdAt?.toDate?.() || new Date(0);
+    const tb2 = b.createdAt?.toDate?.() || new Date(0);
+    return tb2 - ta;
+  });
+  else list.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+
+  const prices = list.map(d => d.price);
+  const mn = prices.length ? Math.min(...prices) : 0;
+  const mx = prices.length ? Math.max(...prices) : 0;
+  const av = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+
+  document.getElementById('s1').textContent = mn || '—';
+  document.getElementById('s2').textContent = av || '—';
+  document.getElementById('s3').textContent = mx || '—';
+  document.getElementById('s4').textContent = list.length;
+  document.getElementById('cl').textContent = list.length + '件（' + fuel + (filterArea ? ' / ' + filterArea : '') + ')';
+
+  const tb = document.getElementById('tb');
+  const em = document.getElementById('em');
+  if (!list.length) { tb.innerHTML = ''; em.style.display = 'block'; return; }
+  em.style.display = 'none';
+
+  tb.innerHTML = list.map((s, i) => {
+    const diff = s.price - mn;
+    const dh = diff === 0
+      ? `<div class="pd-c">★ 最安値</div>`
+      : `<div class="pd-e">+${diff}円</div>`;
+    const sv = s.service === 'セルフ'
+      ? `<span class="badge bs">セルフ</span>`
+      : `<span class="badge bf">フル</span>`;
+    const rc = i === 0 ? 'rn r1' : i === 1 ? 'rn r2' : 'rn';
+    const liked = (window._likedIds || new Set()).has(s.id);
+    const lc = liked ? 'lb on' : 'lb';
+    const lh = liked ? 'currentColor' : 'none';
+    return `<tr class="tr">
+      <td><div class="${rc}">${i + 1}</div></td>
+      <td>
+        <div class="sn">${escHtml(s.name)}</div>
+        <div class="sa">${escHtml(s.area)}</div>
+        ${s.note ? `<div class="sm">${escHtml(s.note)}</div>` : ''}
+      </td>
+      <td>${sv}</td>
+      <td class="pc">
+        <div class="pn">${s.price}</div>
+        <div class="pu">円/L</div>
+        ${dh}
+      </td>
+      <td class="tc">${tl(s.createdAt)}</td>
+      <td class="lc">
+        <button class="${lc}" onclick="like('${s.id}', ${s.likes || 0})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="${lh}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          ${s.likes || 0}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function rarea() {
+  const areas = {};
+  (window._allData || []).filter(d => d.fuel === fuel).forEach(d => {
+    if (!areas[d.area]) areas[d.area] = [];
+    areas[d.area].push(d.price);
+  });
+  const sorted = Object.entries(areas).sort((a, b) => Math.min(...a[1]) - Math.min(...b[1]));
+  document.getElementById('al').innerHTML = sorted.map(([a, p]) =>
+    `<div class="aitem${filterArea === a ? ' on' : ''}" onclick="setArea('${escHtml(a)}')">
+      <div><div class="aname">${escHtml(a)}</div><div class="acnt">${p.length}件</div></div>
+      <div class="amin">${Math.min(...p)}</div>
+    </div>`
+  ).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px;">投稿がありません</div>';
+}
+
+function setArea(a) {
+  filterArea = filterArea === a ? '' : a;
+  render();
+  rarea();
+}
+
+function setNav(btn, tab) {
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  if (tab === 'post') showPost();
+  else hidePost();
+}
+
+function showPost() {
+  document.getElementById('pform').classList.add('on');
+  document.getElementById('pform').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function hidePost() {
+  document.getElementById('pform').classList.remove('on');
+  document.querySelectorAll('.ntab')[0].classList.add('on');
+  document.querySelectorAll('.ntab')[1].classList.remove('on');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  setTimeout(() => { t.className = 'toast'; }, 4000);
+}
+
+async function like(id, currentLikes) {
+  if (!window._dbReady) return;
+  if (!window._likedIds) window._likedIds = new Set();
+  if (window._likedIds.has(id)) return;
+  window._likedIds.add(id);
+  try {
+    await window._updateDoc(window._doc(window._db, 'prices', id), { likes: currentLikes + 1 });
+  } catch (e) { window._likedIds.delete(id); }
+}
+
+async function doPost() {
+  const name = document.getElementById('fn').value.trim();
+  const area = document.getElementById('fa').value.trim();
+  const f = document.getElementById('ff').value;
+  const price = parseInt(document.getElementById('fp').value);
+  const svc = document.getElementById('fv').value;
+  const note = document.getElementById('fm').value.trim();
+
+  if (!name || !area || !price || price < 50 || price > 350) {
+    showToast('スタンド名・エリア・正しい価格（50〜350円）を入力してください', 'ng');
+    return;
+  }
+  if (!window._dbReady) {
+    showToast('Firebaseが設定されていません。HTMLを編集してください', 'ng');
+    return;
+  }
+  try {
+    await window._addDoc(window._col, {
+      name, area, fuel: f, price, service: svc, note,
+      likes: 0,
+      createdAt: window._serverTimestamp()
+    });
+    ['fn', 'fa', 'fp', 'fm'].forEach(id => document.getElementById(id).value = '');
+    showToast('投稿しました！みんなに共有されました。', 'ok');
+    fuel = f;
+    document.querySelectorAll('.fb').forEach((b, i) => {
+      b.classList.toggle('on', i === ['レギュラー', 'ハイオク', '軽油', '灯油'].indexOf(f));
+    });
+    hidePost();
+  } catch (e) {
+    showToast('投稿に失敗しました。もう一度お試しください', 'ng');
+    console.error(e);
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
